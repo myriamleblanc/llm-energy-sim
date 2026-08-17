@@ -2,7 +2,8 @@
     "hardware_calibration": {
       "target_gpu": "Data Center Class Baseline (e.g. NVIDIA T4 / A100)",
       "prefill_power_watts": 250.0,
-      "decode_power_watts": 135.0
+      "decode_power_watts": 135.0,
+      "dvfs_penalty_seconds": 0.015
     },
     "workload_settings": {
       "total_requests": 1000,
@@ -10,4 +11,4 @@
       "non_english_probability": 0.30,
       "non_english_multiplier": 1.30
     }
-  }
+  } 
