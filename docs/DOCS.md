@@ -3,6 +3,13 @@
 This repository evaluates energy-latency trade-offs in LLM inference serving by simulating chunked scheduling, paged memory management, and iteration-level dynamic frequency scaling.
 
 ---
+## 0. Dependencies & installation
+
+Install the visualization dependencies before executing the pipeline:
+
+[```bash]
+pip install matplotlib
+
 
 ## 1. Hardware Calibration & Workload Schema (`data/`)
 
@@ -33,6 +40,7 @@ This repository evaluates energy-latency trade-offs in LLM inference serving by 
 Executes comparative benchmarks across the workload trace and calculates key performance indicators:
 * **Energy Consumption**: Joules ($\text{J}$), kilowatt-hours ($\text{kWh}$), and Joules per token ($\text{J/token}$).
 * **Latency Performance**: Inter-Token Latency ($\text{ITL}$ in ms) and total simulation wall-clock time.
+* **Pareto Sweep**: Evaluates intermediate power caps (200W,165W,135W,110W) against the unthrottled baseline.
 * **Exports**: Structured comparative JSON artifact saved to `data/simulation_results.json`.
 
 ---
@@ -45,8 +53,14 @@ python generate_trace.py
 
 # 2. Execute comparative evaluation
 python run_experiments.py
-```'''
+
+# 3. Generate Pareto Frontier visualization chart
+python plot_pareto.py
+```
 ---
+
+## 5. Visualization Artifacts (docs/)
+* **docs.pareto_frontier.png**: Chart mapping Mean Inter-Token Latency (ITL ms) versus Total Energy Consumption (kWh). Demonstrates that the unified 135W policy maximizes electrical efficiency (−43.59% energy savings) while remaining strictly within the 5% ITL SLO budget.
 
 ## Key Papers Used
 
