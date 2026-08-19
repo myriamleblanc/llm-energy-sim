@@ -30,6 +30,17 @@ import os
 from baseline_policy import run_baseline_policy
 from unified_policy import run_unified_policy
 
+"""Quick helper to format a point for our Pareto Frontier curve"""
+def make_sweep_point(label, cap, run_data, base_kwh):
+    savings = ((base_kwh - run_data["total_energy_kwh"])/ base_kwh) * 100.0 if base_kwh > 0 else 0.0
+    return {
+        "label": label,
+        "power_watts": cap,
+        "mean_itl_ms": run_data["mean_itl_ms"],
+        "total_energy_kwh": round(run_data["total_energy_kwh"], 6),
+        "energy_savings_pct": round(savings, 2)
+    }
+
 def main():
     # ---------------------------------------------------------
     # 1: Load Hardware Calibration from power_bounds.json
@@ -85,6 +96,19 @@ def main():
     unified_j_per_tok = unified_res["total_energy_joules"] / total_tokens
 
     # ---------------------------------------------------------
+    # 4b: Generate Pareto Frontier Sweep Points (from helper function make_sweep_point)
+    # ---------------------------------------------------------
+    pareto_sweep_points = [
+        make_sweep_point("Fixed Baseline (Unthrottled 250W)", p_decode_base, base_res, base_res["total_energy_kwh"])
+    ]
+
+    for cap in [200.0, 165.0, p_decode_unified, 110.0]:
+        res = run_unified_policy(requests, p_prefill, cap, dvfs_penalty)
+        pareto_sweep_points.append(
+            make_sweep_point(f"DVFS Cap at {cap}W", cap, res, base_res["total_energy_kwh"])
+        )
+        
+    # ---------------------------------------------------------
     # 5: Display Verification Matrix
     # ---------------------------------------------------------
     print("\n" + "=" * 82)
@@ -114,7 +138,8 @@ def main():
             "energy_saved_pct": energy_saved_pct,
             "latency_overhead_pct": latency_delta_pct,
             "itl_overhead_pct": itl_delta_pct
-        }
+        },
+        "pareto_frontier_sweep": pareto_sweep_points
     }
     results_path = os.path.join("data", "simulation_results.json")
     with open(results_path, "w") as f:
